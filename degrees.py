@@ -84,6 +84,15 @@ def main():
             print(f"{i + 1}: {person1} and {person2} starred in {movie}")
 
 
+def get_path(final_node):
+    path = []
+    node = final_node
+    while node.parent is not None:
+        path.append((node.movie, node.state))
+        node = node.parent
+    path.reverse()
+    return path
+
 def shortest_path(source, target):
     """
     Returns the shortest list of (movie_id, person_id) pairs
@@ -91,40 +100,32 @@ def shortest_path(source, target):
 
     If no possible path, returns None.
     """
-    _source = Node(state=source, parent=None, action=None)
-    _target = Node(state=target, parent=None, action=None)
+    # Initialize the frontier with the source node
     stack_frontier = StackFrontier()
-    stack_frontier.add(_source)
-    cnt = 0
-    while (not stack_frontier.contains_state(_target.state)):
-        print(f"+++ {stack_frontier.frontier[0].state} +++")
-        cnt+=1
-        if (stack_frontier.empty()):
-            print("Before")
-            print(cnt)
+    stack_frontier.add(Node(state=source, parent=None, movie=None))
+
+    # Initialize an empty explored set
+    explored = set()
+
+    while True:
+        if stack_frontier.empty():
             return None
-        print("After")
-        stack_frontier.explored_people.append(stack_frontier.remove())
-        neighbors = neighbors_for_person(stack_frontier.explored_people[-1].state)
-        # print(f"type : {type(stack_frontier.explored_people[-1].state)} variable : {stack_frontier.explored_people[-1].state}")
-        for movies, people in neighbors:
-            if people in stack_frontier.explored_people:
-                continue
-            node = Node(state=people, parent=stack_frontier.explored_people[-1].state, action=None)
-            stack_frontier.frontier.append(node)
-    route = []
-    node = stack_frontier.explored_people[-1].parent
-    while (node):
-        route.append(node)
-        print(node.state)
-        node = node.parent
+        
+        node = stack_frontier.remove()
 
-    
-    # TODO
+        if node.state == target:
+            return get_path(node)
 
+        explored.add(node.state)
 
-    raise NotImplementedError
+        for movie_id, person_id in neighbors_for_person(node.state):
+            if not stack_frontier.contains_state(person_id) and person_id not in explored:
+                child = Node(state=person_id, parent=node, movie=movie_id)
+                stack_frontier.add(child)
+#     return None
+#     # TODO
 
+#     raise NotImplementedError
 
 def person_id_for_name(name):
     """
