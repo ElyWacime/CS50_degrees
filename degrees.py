@@ -1,5 +1,6 @@
 import csv
 import sys
+import random
 
 from util import Node, StackFrontier, QueueFrontier
 
@@ -93,18 +94,10 @@ def get_path(final_node):
     path.reverse()
     return path
 
-def shortest_path(source, target):
-    """
-    Returns the shortest list of (movie_id, person_id) pairs
-    that connect the source to the target.
-
-    If no possible path, returns None.
-    """
-    # Initialize the frontier with the source node
+def use_stack_frontier(source, target):
     stack_frontier = StackFrontier()
     stack_frontier.add(Node(state=source, parent=None, movie=None))
 
-    # Initialize an empty explored set
     explored = set()
 
     while True:
@@ -122,6 +115,40 @@ def shortest_path(source, target):
             if not stack_frontier.contains_state(person_id) and person_id not in explored:
                 child = Node(state=person_id, parent=node, movie=movie_id)
                 stack_frontier.add(child)
+
+def use_queue_frontier(source, target):
+    queue_frontier = QueueFrontier()
+    queue_frontier.add(Node(state=source, parent=None, movie=None))
+
+    explored = set()
+
+    while True:
+        if  queue_frontier.empty():
+            return None
+        
+        node =  queue_frontier.remove()
+
+        if node.state == target: 
+            return get_path(node)
+
+        explored.add(node.state)
+
+        for movie_id, person_id in neighbors_for_person(node.state):
+            if not  queue_frontier.contains_state(person_id) and person_id not in explored:
+                child = Node(state=person_id, parent=node, movie=movie_id)
+                queue_frontier.add(child)
+
+def shortest_path(source, target):
+    """
+    Returns the shortest list of (movie_id, person_id) pairs
+    that connect the source to the target.
+
+    If no possible path, returns None.
+    """
+    random_integer = random.randint(1, 10)
+    if random_integer <= 5:
+        return use_stack_frontier(source, target)
+    return use_queue_frontier(source, target)
 #     return None
 #     # TODO
 
